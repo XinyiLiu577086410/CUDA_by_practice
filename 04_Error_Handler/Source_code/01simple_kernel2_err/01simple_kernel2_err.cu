@@ -14,7 +14,7 @@ __global__ void addKernel(int a, int b, int* c) {
     two = a + b;
 
     // 5. variale one can't be read in the kernel
-    two = (a + b) * one;
+    // two = (a + b) * one;
 }
 
 int main(void) {

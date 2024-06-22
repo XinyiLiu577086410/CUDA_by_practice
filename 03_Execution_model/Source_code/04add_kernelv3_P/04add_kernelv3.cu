@@ -11,6 +11,22 @@
 const int ARRAY_BYTES = ARRAY_SIZE * sizeof(int);
 
 // kernel v1
+// __global__ void addKernel(int* d_a, int* d_b, int* d_result) {
+//     // index of the threads in x        -> threadIdx.x
+//     // index of the blocks in x         -> blockIdx.x
+//     // number of threads per block in x -> blockDim.x
+//     // number of blocks per grid in x   -> gridDim.x
+
+//     // -:YOUR CODE HERE:-
+
+//     int idx = threadIdx.x + blockIdx.x * blockDim.x;
+//     while(idx < ARRAY_SIZE) {
+//         d_result[idx] = d_a[idx] + d_b[idx];
+//         idx += gridDim.x; 
+//     }
+// }
+
+// kernel v2
 __global__ void addKernel(int* d_a, int* d_b, int* d_result) {
     // index of the threads in x        -> threadIdx.x
     // index of the blocks in x         -> blockIdx.x
@@ -24,9 +40,9 @@ __global__ void addKernel(int* d_a, int* d_b, int* d_result) {
         d_result[idx] = d_a[idx] + d_b[idx];
         idx += gridDim.x; 
     }
-
-
 }
+
+
 
 void onDevice(int* h_a, int* h_b, int* h_result) {
     int *d_a, *d_b, *d_result;

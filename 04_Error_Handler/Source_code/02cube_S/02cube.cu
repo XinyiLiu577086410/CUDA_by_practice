@@ -38,10 +38,10 @@ void test(float* h_in, float* h_out, int ARRAY_SIZE, int ARRAY_BYTES) {
     // print out the resulting array
     for (int i = 0; i < ARRAY_SIZE; i++) {
         assert(h_out[i] == (h_in[i] * h_in[i] * h_in[i]));
-        printf("%f", h_out[i]);
-        printf(((i % 4) != 3) ? "\t" : "\n");
+        printf("%16f", h_out[i]);
+        printf(((i % 4) != 3) ? "" : "\n");
     }
-
+    
     printf("-: successful execution :-\n");
 }
 
