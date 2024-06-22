@@ -66,6 +66,17 @@ void onDevice(int* h_a, int* h_b, int* h_result) {
         // printf("%i\n", h_result[i] );
     }
 
+    addKernel2<<<BLOCKS, THREADS>>>(d_a, d_b, d_result);
+
+    // copy the array 'result' back from the device to the CPU
+    cudaMemcpy(h_result, d_result, ARRAY_BYTES, cudaMemcpyDeviceToHost);
+
+    // check the results
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        assert(h_a[i] + h_b[i] == h_result[i]);
+        // printf("%i\n", h_result[i] );
+    }
+
     // run the kernel
     addKernel3<<<BLOCKS, THREADS>>>(d_a, d_b, d_result);
 

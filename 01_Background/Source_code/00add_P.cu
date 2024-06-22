@@ -18,7 +18,7 @@ int* add(int* a, int* b, int* result, int N) {
     cudaMemcpy(device_b, b, ARRAY_BYTES, cudaMemcpyHostToDevice);
 
     //kernel invocation
-    add_kernel<<<ceil(N/1024), 1024>>>(device_a,device_b,device_result, N);
+    add_kernel<<<ceil(N/1024.000), 1024>>>(device_a,device_b,device_result, N);
 
     cudaMemcpy(result, device_result, ARRAY_BYTES, cudaMemcpyDeviceToHost);
     cudaFree(device_a);
