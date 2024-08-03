@@ -5,7 +5,7 @@
 
 #define N 500
 
-__device__ int calcIndex(int x, int y) {
+__device__ size_t calcIndex(size_t x, size_t y) {
     return y * N + x;
 }
 
