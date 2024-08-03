@@ -11,12 +11,30 @@ __global__ void mseKernel(Vector<float> d_a,
                           Vector<float> d_b,
                           Vector<float> d_c) {
     // -:YOUR CODE HERE:-
+    __shared__ float cache[4];
+    int idx = (threadIdx.x + blockIdx.x * BLOCK_SIZE) + (threadIdx.y + blockIdx.y * BLOCK_SIZE) * STRIDE;
+    int ith = threadIdx.x + threadIdx.y * BLOCK_SIZE;
+
+    cache[ith] = POW( d_a.getElement(idx) - d_b.getElement(idx) );
+    __syncthreads();
+
+    int i = blockDim.x * blockDim.y / 2;
+    while(i) {
+        if(ith < i) {
+            cache[ith] += cache[ith + i];
+        }
+        __syncthreads();
+        i /= 2;
+    }
+
+    if(ith == 0)
+        d_c.setElement(blockIdx.x + blockDim.x * blockIdx.y, cache[0]);
 }
 
 void onDevice(Vector<float> h_a, Vector<float> h_b, Vector<float> h_c) {
     // declare GPU vectors
     // -:YOUR CODE HERE:-
-
+    Vector<float> d_a, d_b, d_c;
     // start timer
     GpuTimer timer;
     timer.Start();
@@ -25,10 +43,14 @@ void onDevice(Vector<float> h_a, Vector<float> h_b, Vector<float> h_c) {
 
     // allocate  memory on the GPU
     // -:YOUR CODE HERE:-
+    cudaMalloc((void**)&d_a.elements, ARRAY_BYTES);
+    cudaMalloc((void**)&d_b.elements, ARRAY_BYTES);
+    cudaMalloc((void**)&d_c.elements, 4 * sizeof(float));
 
-    // copy data from CPU the GPU
+   // copy data from CPU the GPU
     // -:YOUR CODE HERE:-
-
+    cudaMemcpy(d_a.elements, h_a.elements, ARRAY_BYTES, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_b.elements, h_b.elements, ARRAY_BYTES, cudaMemcpyHostToDevice);
     // execution configuration
     dim3 GridBlocks(2, 2);
     dim3 ThreadsBlocks(2, 2);
@@ -38,6 +60,7 @@ void onDevice(Vector<float> h_a, Vector<float> h_b, Vector<float> h_c) {
 
     // copy data back from the GPU to the CPU
     // -:YOUR CODE HERE:-
+    cudaMemcpy(h_c.elements, d_c.elements, 4 * sizeof(float), cudaMemcpyDeviceToHost);
 
     // stop timer
     timer.Stop();
@@ -47,6 +70,9 @@ void onDevice(Vector<float> h_a, Vector<float> h_b, Vector<float> h_c) {
 
     // free GPU memory
     // -:YOUR CODE HERE:-
+    cudaFree(d_a.elements);
+    cudaFree(d_b.elements);
+    cudaFree(d_c.elements);
 }
 
 void test() {
