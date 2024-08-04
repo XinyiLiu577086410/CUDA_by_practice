@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <curand.h>
 #include "common/Error.h"
 #include "common/GpuTimer.h"
@@ -45,20 +46,23 @@ __global__ void dotKernel(Vector<float> d_a,
 }
 
 int randomNumbersGenerator(Vector<float> d_data, int n) {
-    curandGenerator_t gen;
 
     /* Create pseudo-random number generator */
     // -:YOUR CODE HERE:-
-
+    curandGenerator_t generator;
+    curandCreateGenerator(&generator, CURAND_RNG_PSEUDO_DEFAULT);
     /* Set seed 1234ULL = unsigned long long */
     // -:YOUR CODE HERE:-
+    srand48(time(NULL));
+    curandSetPseudoRandomGeneratorSeed(generator, lrand48());
 
     /* Generate n floats on device */
     // -:YOUR CODE HERE:-
+    curandGenerateUniform(generator, d_data.elements, n);
 
     /* Cleanup */
     // -:YOUR CODE HERE:-
-
+    curandDestroyGenerator(generator);
     return EXIT_SUCCESS;
 }
 
@@ -74,6 +78,9 @@ void onDevice(Vector<float> h_c) {
 
     // allocate  memory on the GPU
     // -:YOUR CODE HERE:-
+    HANDLER_ERROR_ERR(cudaMalloc((void**)&d_a.elements, ARRAY_BYTES));
+    HANDLER_ERROR_ERR(cudaMalloc((void**)&d_b.elements, ARRAY_BYTES));
+    HANDLER_ERROR_ERR(cudaMalloc((void**)&d_c.elements, P_ARRAY_BYTES));
 
     randomNumbersGenerator(d_a, N);
     randomNumbersGenerator(d_b, N);
@@ -83,6 +90,8 @@ void onDevice(Vector<float> h_c) {
 
     // copy data back from the GPU to the CPU
     // -:YOUR CODE HERE:-
+    cudaMemcpy(h_c.elements, d_c.elements, P_ARRAY_BYTES, cudaMemcpyDeviceToHost);
+
 
     // stop timer
     timer.Stop();

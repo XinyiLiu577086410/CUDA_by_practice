@@ -3,7 +3,7 @@
 
 SOURCE =  02histogram_smem.cu
 
-FLAGS = -arch=sm_11 
+FLAGS = -arch=sm_89
 CC = nvcc  
 
 exe: $(SOURCE)

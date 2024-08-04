@@ -13,6 +13,26 @@ const int ARRAY_BYTES_H = SIZE_H * sizeof(int);
 
 __global__ void histo_kernel(Vector<unsigned int> d_a, Vector<int> d_histo) {
     // -:YOUR CODE HERE:-
+    __shared__ int histogram_buffer[SIZE_H];
+    int tx = threadIdx.x;
+    int bx = blockIdx.x;
+    int bDimx = blockDim.x;
+    int gDimx = gridDim.x;
+
+    if(tx < SIZE_H)
+        histogram_buffer[tx] = 0;
+
+    for(int idx = tx + bx * bDimx; idx < d_a.length; idx += bDimx * gDimx) {
+        atomicAdd(&histogram_buffer[d_a.elements[idx]], 1);
+    }
+
+    __syncthreads();
+
+    if(tx == 0)
+        for(int i = 0; i < SIZE_H; ++i) {
+            atomicAdd(&d_histo.elements[i], histogram_buffer[i]);
+            // d_histo.elements[i] += histogram_buffer[i];
+        }
 }
 
 void onDevice(Vector<unsigned int> h_a, Vector<int> h_histo) {
