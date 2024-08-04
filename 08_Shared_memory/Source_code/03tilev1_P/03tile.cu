@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <cstdio>
 #include "Error.h"
 #include "GpuTimer.h"
 #include "Vector.h"
@@ -16,11 +17,18 @@ __global__ void tileKernelv1(Vector<int> d_a,
                              Vector<int> d_out) {
     // Change next operation in order to use the tiling technique
     int i = threadIdx.x + blockIdx.x * blockDim.x;
-    d_out.elements[i] =
-        (d_a.getElement(i) + d_b.getElement(i) + d_c.getElement(i) +
-         d_d.getElement(i) + d_e.getElement(i)) /
-        5.0f;
-
+    int tx = threadIdx.x;
+    __shared__ int As[BLOCKSIZE];
+    __shared__ int Bs[BLOCKSIZE];
+    __shared__ int Cs[BLOCKSIZE];
+    __shared__ int Ds[BLOCKSIZE];
+    __shared__ int Es[BLOCKSIZE];
+    As[tx] = d_a.getElement(i);
+    Bs[tx] = d_b.getElement(i);
+    Cs[tx] = d_c.getElement(i);
+    Ds[tx] = d_d.getElement(i);
+    Es[tx] = d_e.getElement(i);
+    d_out.elements[i] = (As[tx] + Bs[tx] + Cs[tx] + Ds[tx] + Es[tx]) / 5.0f;
     // -:YOUR CODE HERE:-
 }
 
@@ -51,11 +59,11 @@ void onDevice(Vector<int> h_a,
                                  cudaMemcpyHostToDevice));
     HANDLER_ERROR_ERR(cudaMemcpy(d_b.elements, h_b.elements, ARRAY_BYTES,
                                  cudaMemcpyHostToDevice));
-    HANDLER_ERROR_ERR(cudaMemcpy(d_c.elements, h_b.elements, ARRAY_BYTES,
+    HANDLER_ERROR_ERR(cudaMemcpy(d_c.elements, h_c.elements, ARRAY_BYTES,
                                  cudaMemcpyHostToDevice));
-    HANDLER_ERROR_ERR(cudaMemcpy(d_d.elements, h_b.elements, ARRAY_BYTES,
+    HANDLER_ERROR_ERR(cudaMemcpy(d_d.elements, h_d.elements, ARRAY_BYTES,
                                  cudaMemcpyHostToDevice));
-    HANDLER_ERROR_ERR(cudaMemcpy(d_e.elements, h_b.elements, ARRAY_BYTES,
+    HANDLER_ERROR_ERR(cudaMemcpy(d_e.elements, h_e.elements, ARRAY_BYTES,
                                  cudaMemcpyHostToDevice));
 
     // launch kernel
@@ -82,11 +90,10 @@ void test(Vector<int> h_a,
           Vector<int> h_e,
           Vector<int> h_out) {
     int aux = 0;
-    for (int i = 0; i < N - 2; i++) {
+    for (int i = 0; i < N; i++) {
         aux = (h_a.getElement(i) + h_b.getElement(i) + h_c.getElement(i) +
-               h_d.getElement(i) + h_e.getElement(i)) /
-              5.0f;
-        assert(aux == h_out.getElement(i + 2));
+               h_d.getElement(i) + h_e.getElement(i)) / 5.0f;
+        assert(aux == h_out.getElement(i));
     }
 }
 

@@ -40,7 +40,7 @@ struct Vector {
 
     __host__ void print() {
         for (int i = 0; i < length; i++)
-            cout << elements[i] << endl;
+            cout << elements[i] << " ";
         cout << endl;
     }
 };

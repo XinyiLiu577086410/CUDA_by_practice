@@ -11,12 +11,25 @@ const int ARRAY_BYTES = N * sizeof(int);
 __global__ void tileKernelv2(Vector<int> d_in, Vector<int> d_out) {
     // Change next operation in order to use the tiling technique
     int i = threadIdx.x + blockIdx.x * blockDim.x;
-    d_out.elements[i] =
-        (d_in.getElement(i - 2) + d_in.getElement(i - 1) + d_in.getElement(i) +
-         d_in.getElement(i + 1) + d_in.getElement(i + 2)) /
-        5.0f;
+    int tx = threadIdx.x;
+    __shared__ int As[BLOCKSIZE];
+    __shared__ int Bs[BLOCKSIZE];
+    __shared__ int Cs[BLOCKSIZE];
+    __shared__ int Ds[BLOCKSIZE];
+    __shared__ int Es[BLOCKSIZE];
+    As[tx] = d_in.getElement(i - 2);
+    Bs[tx] = d_in.getElement(i - 1);
+    Cs[tx] = d_in.getElement(i);
+    Ds[tx] = d_in.getElement(i + 1);
+    Es[tx] = d_in.getElement(i + 2);
+    d_out.elements[i] = (As[tx] + Bs[tx] + Cs[tx] + Ds[tx] + Es[tx]) / 5.0f;
+    // d_out.elements[i] =
+    //     (d_in.getElement(i - 2) + d_in.getElement(i - 1) + d_in.getElement(i) +
+    //      d_in.getElement(i + 1) + d_in.getElement(i + 2)) /
+    //     5.0f;
 
     // -:YOUR CODE HERE:-
+
 }
 
 void onDevice(Vector<int> h_in, Vector<int> h_out) {
