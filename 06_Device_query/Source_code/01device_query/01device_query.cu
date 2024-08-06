@@ -76,6 +76,10 @@ void deviceProperties() {
                prop.maxThreadsDim[1], prop.maxThreadsDim[2]);
         printf("Max grid dimensions:  (%d, %d, %d)\n", prop.maxGridSize[0],
                prop.maxGridSize[1], prop.maxGridSize[2]);
+        //asyncEngineCount
+        printf("Async engine count:  %d\n", prop.asyncEngineCount);
+        // concurrentKernels
+       printf("Concurrent kernels:  %d\n", prop.concurrentKernels);
         printf("\n");
     }
 }

@@ -4,7 +4,7 @@
 
 #define MARK 1
 #define UNMARK 0
-#define ARRAY_SIZE 16384
+#define ARRAY_SIZE 100000000
 
 const int ARRAY_BYTES = ARRAY_SIZE * sizeof(int);
 

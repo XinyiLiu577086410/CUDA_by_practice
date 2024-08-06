@@ -3,6 +3,7 @@
 
 #include <iostream>
 using namespace std;
+#define int long
 
 template <typename T>
 struct Vector {
