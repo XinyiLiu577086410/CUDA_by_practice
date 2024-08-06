@@ -5,7 +5,7 @@
 #include "common/GpuTimer.h"
 #include "common/Matrix.h"
 
-#define N 1024
+#define N 4096
 #define K 16
 
 void compareResults(Matrix<int> h_a, Matrix<int> h_b) {
@@ -32,14 +32,22 @@ __global__ void transposedMatrixKernelFinal(Matrix<int> d_a, Matrix<int> d_b) {
     __shared__ float tile[K][K];
 
     // -:YOUR CODE HERE:-
-
-    // coalesced read from global mem, TRANSPOSED write into shared mem:
-    tile[y][x] = d_a.elements[(in_corner_i + x) + (in_corner_j + y) * N];
-    __syncthreads();
-    // read from shared mem, coalesced write to global mem:
-    d_b.elements[(out_corner_i + x) + (out_corner_j + y) * N] = tile[x][y];
-
-    // -:YOUR CODE HERE:-
+    while (in_corner_j < N) {
+        int in_corner_i = blockIdx.x * blockDim.x;
+        int out_corner_j = blockIdx.x * blockDim.x;
+        while (in_corner_i < N) {
+            // coalesced read from global mem, TRANSPOSED write into shared mem:
+            tile[y][x] = d_a.elements[(in_corner_i + x) + (in_corner_j + y) * N];
+            __syncthreads();
+            // read from shared mem, coalesced write to global mem:
+            d_b.elements[(out_corner_i + x) + (out_corner_j + y) * N] = tile[x][y];
+            // -:YOUR CODE HERE:-
+            in_corner_i += gridDim.x * blockDim.x;
+            out_corner_j += gridDim.x * blockDim.x;
+        }
+        in_corner_j += gridDim.y * blockDim.y;
+        out_corner_i += gridDim.y * blockDim.y;
+    }
 }
 
 __global__ void transposedMatrixKernel_tile_padded(Matrix<int> d_a,
@@ -97,11 +105,11 @@ void onDevice(Matrix<int> h_a, Matrix<int> h_b) {
                                  cudaMemcpyDeviceToHost));
     compareResults(h_a, h_b);
 
-    // GridBlocks( 4,4 );
-    // ThreadsBlocks( 2,2 );
+    dim3 smallGridBlocks( 1024 / 16 , 1024 / 16 );
+    dim3 smallThreadsBlocks( 16, 16 );
 
     timer.Start();
-    transposedMatrixKernelFinal<<<GridBlocks, ThreadsBlocks>>>(d_a, d_b);
+    transposedMatrixKernelFinal<<<smallGridBlocks, smallThreadsBlocks>>>(d_a, d_b);
     HANDLER_ERROR_MSG("kernel panic!!!");
     timer.Stop();
     printf("Time Device final:  %f ms\n", timer.Elapsed());
