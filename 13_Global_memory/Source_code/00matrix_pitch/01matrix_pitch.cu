@@ -69,7 +69,8 @@ void onDevice(Matrix<int> h_a, Matrix<int> h_b) {
                                       d_a.width * sizeof(int), d_a.height));
     HANDLER_ERROR_ERR(cudaMallocPitch((void**)(&d_b.elements), &pitchB,
                                       d_b.width * sizeof(int), d_b.height));
-    printf("pitch = %li\n", pitchA / sizeof(int));
+    printf("pitchA = %li, d_a = %p\n", pitchA / sizeof(int), d_a.elements);
+    printf("pitchB = %li, d_b = %p\n", pitchB / sizeof(int), d_b.elements);
 
     // copy from host memory to device
     HANDLER_ERROR_ERR(cudaMemcpy(d_a.elements, h_a.elements, ARRAY_BYTES,

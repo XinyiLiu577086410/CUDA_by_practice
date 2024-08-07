@@ -1,7 +1,7 @@
 #Makefile
 
 
-SOURCE =  03matrix_transpose_S.cu
+SOURCE =  03matrix_transpose_P.cu
 
 CC = nvcc
 
